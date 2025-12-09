@@ -1,0 +1,67 @@
+<div class="tracks">
+  {% set hit_ids = hit_ids or [] %}
+  {% set top_play_ids = top_play_ids or [] %}
+  {% set top_like_ids = top_like_ids or [] %}
+  {% for t in tracks %}
+    <div class="track card">
+      <div class="header-row">
+        <div class="title">{{ t.title }}</div>
+        <div class="badges">
+          {% if t.id in hit_ids %}
+            <span class="badge hit">Hit</span>
+          {% elif t.id in top_play_ids %}
+            <span class="badge stream">Stream</span>
+          {% elif t.id in top_like_ids %}
+            <span class="badge liked">Liked</span>
+          {% endif %}
+        </div>
+      </div>
+      <div class="meta">
+        <span class="creator">by <a href="/profiles/{{ t.creator_nickname }}" class="creator-link">{{ t.creator_nickname }}</a></span>
+        {% if t.artist %}
+          <span class="artist">artist: {{ t.artist }}</span>
+        {% endif %}
+        <span class="counts">Likes {{ t.likes_count }} | Plays {{ t.plays_count }}</span>
+      </div>
+      <div class="actions-row">
+        <button type="button" class="primary play-btn" data-track-id="{{ t.id }}" data-title="{{ t.title }}" data-meta="{{ t.artist or '' }} | {{ t.creator_nickname }}" data-creator="{{ t.creator_nickname }}">Play</button>
+        <button type="button" class="ghost queue-btn" data-track-id="{{ t.id }}">Queue</button>
+        <div class="actions">
+          {% if current_user %}
+            {% if t.id in liked_ids %}
+              <form method="post" action="/tracks/{{ t.id }}/unlike">
+                <button type="submit">Unlike</button>
+              </form>
+            {% else %}
+              <form method="post" action="/tracks/{{ t.id }}/like">
+                <button type="submit">Like</button>
+              </form>
+            {% endif %}
+            {% if t.creator_id == current_user.id %}
+              <form method="post" action="/tracks/{{ t.id }}/delete">
+                <button type="submit" class="danger">Delete</button>
+              </form>
+              <form method="post" action="/tracks/{{ t.id }}/update">
+                <input type="text" name="title" placeholder="New title" />
+                <input type="text" name="artist" placeholder="Artist" />
+                <button type="submit">Save</button>
+              </form>
+            {% endif %}
+          {% endif %}
+        </div>
+      </div>
+      <audio id="audio-{{ t.id }}" src="{{ '/static/uploads/' ~ t.filename }}" preload="none" data-track-id="{{ t.id }}" style="display:none"></audio>
+    </div>
+  {% endfor %}
+</div>
+<script>
+  // Mark play once per audio
+  document.querySelectorAll('audio[data-track-id]').forEach((audio) => {
+    let sent = false;
+    audio.addEventListener('play', () => {
+      if (sent) return;
+      sent = true;
+      fetch(`/tracks/${audio.dataset.trackId}/play`, { method: 'POST' }).catch(() => {});
+    });
+  });
+</script>

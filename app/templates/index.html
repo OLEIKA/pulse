@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero">
+  <h1>Главная</h1>
+  <form class="search-form" method="get" action="/">
+    <input type="text" name="q" placeholder="Поиск по трекам" value="{{ query }}" />
+    <select name="filter">
+      <option value="all" {% if filter == 'all' %}selected{% endif %}>Все</option>
+      <option value="user" {% if filter == 'user' %}selected{% endif %}>От пользователей</option>
+      <option value="platform" {% if filter == 'platform' %}selected{% endif %}>От площадки</option>
+    </select>
+    <button type="submit">Искать</button>
+  </form>
+</section>
+
+{% if current_user %}
+<section class="upload">
+  <h2>Загрузить MP3</h2>
+  <form method="post" action="/tracks/upload" enctype="multipart/form-data">
+    <input type="text" name="title" placeholder="Название трека" required />
+    <input type="text" name="artist" placeholder="Артист" />
+    <input type="file" name="file" accept=".mp3,audio/mpeg" required />
+    <button type="submit">Загрузить</button>
+  </form>
+</section>
+{% endif %}
+
+<section>
+  <h2>Треки</h2>
+  {% include "track_list.html" %}
+</section>
+
+{% if profiles %}
+<section>
+  <h2>Профили</h2>
+  <div class="profile-results">
+    {% for p in profiles %}
+      <a class="profile-card" href="/profiles/{{ p.nickname }}">
+        <div class="nick">@{{ p.nickname }}</div>
+      </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+{% endblock %}

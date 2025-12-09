@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block content %}
+<section>
+  <h1>Профиль {{ profile_user.nickname }}</h1>
+  <div class="section">
+    <form class="search-form narrow" method="get" action="/profiles/{{ profile_user.nickname }}">
+      <input type="text" name="profile" placeholder="Поиск профиля по нику" value="{{ profile_query or '' }}" />
+      <button type="submit">Искать</button>
+    </form>
+    {% if profiles %}
+    <div class="profile-results">
+      {% for p in profiles %}
+        <a class="profile-card" href="/profiles/{{ p.nickname }}">
+          <div class="nick">@{{ p.nickname }}</div>
+        </a>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+  {% if current_user and current_user.id == profile_user.id %}
+  <div class="section">
+    <form method="post" action="/auth/nickname" class="auth-form">
+      <input type="text" name="nickname" placeholder="Новый ник" required />
+      <button type="submit">Изменить ник</button>
+    </form>
+  </div>
+  <div class="section upload">
+    <h3>Загрузить трек</h3>
+    <form method="post" action="/tracks/upload" enctype="multipart/form-data" class="auth-form vertical">
+      <input type="text" name="title" placeholder="Название трека" required />
+      <input type="text" name="artist" placeholder="Артист" />
+      <input type="file" name="file" accept=".mp3,audio/mpeg" required />
+      <button type="submit">Загрузить</button>
+    </form>
+  </div>
+  {% endif %}
+  <div class="section">
+    <h2>Мои треки</h2>
+    {% set tracks = uploaded %}
+    {% set hit_ids = uploaded_hit %}
+    {% set top_play_ids = uploaded_play %}
+    {% set top_like_ids = uploaded_like %}
+    {% include "track_list.html" %}
+  </div>
+  <div class="section">
+    <h2>Избранные</h2>
+    {% set tracks = favorites %}
+    {% set hit_ids = favorites_hit %}
+    {% set top_play_ids = favorites_play %}
+    {% set top_like_ids = favorites_like %}
+    {% include "track_list.html" %}
+  </div>
+</section>
+{% endblock %}
